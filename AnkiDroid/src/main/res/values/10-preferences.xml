@@ -144,6 +144,7 @@
     <string name="time_limit_summ">XXX min</string>
     <string name="day_offset">Start of next day</string>
     <string name="day_offset_summ">XXX hours past midnight</string>
+    <string name="hide_zero_deck">Hide decks with no due cards.</string>
     <string name="input_workaround">Input workaround</string>
     <string name="input_workaround_summ">Workaround for focusing problems on HTML input boxes. Causes problems on several devices.</string>
     <string name="pref_keep_screen_on">Keep screen on</string>

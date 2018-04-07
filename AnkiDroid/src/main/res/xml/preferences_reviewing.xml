@@ -52,6 +52,10 @@
             android:title="@string/time_limit"
             app:max="9999"
             app:min="0" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="hideZeroDueDecks"
+            android:title="@string/hide_zero_deck" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_cat_flashcard" >
         <Preference

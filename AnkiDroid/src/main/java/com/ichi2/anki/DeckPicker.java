@@ -102,6 +102,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.TreeMap;
 
@@ -176,6 +177,11 @@ public class DeckPicker extends NavigationDrawerActivity implements
      */
     private long mFocusedDeck;
 
+
+    /**
+     * Flag to track whether decks with no due cards are hidden.  (Set in preferences-review).
+     */
+    private boolean mHideZeroDueDecks;
 
 
     // ----------------------------------------------------------------------------
@@ -390,6 +396,9 @@ public class DeckPicker extends NavigationDrawerActivity implements
         mDeckListAdapter.setDeckExpanderClickListener(mDeckExpanderClickListener);
         mDeckListAdapter.setDeckLongClickListener(mDeckLongClickListener);
         mRecyclerView.setAdapter(mDeckListAdapter);
+
+        //grab hideZeroDueDeck preference
+        mHideZeroDueDecks = preferences.getBoolean("hideZeroDueDecks", false);
 
         mPullToSyncWrapper = (SwipeRefreshLayout) findViewById(R.id.pull_to_sync_wrapper);
         mPullToSyncWrapper.setDistanceToTriggerSync(SWIPE_TO_SYNC_TRIGGER_DISTANCE);
@@ -1880,6 +1889,38 @@ public class DeckPicker extends NavigationDrawerActivity implements
                     return;
                 }
                 List<Sched.DeckDueTreeNode> nodes = (List<Sched.DeckDueTreeNode>) result.getObjArray()[0];
+
+                //Sol'n ISSUE #1902:  check deck has due cards, otherwise hide deck
+                if (mHideZeroDueDecks) {
+
+                    ListIterator<Sched.DeckDueTreeNode> iter = nodes.listIterator();
+                    Sched.DeckDueTreeNode d;
+
+                    while(iter.hasNext()) {
+
+                        d = iter.next();
+
+                        //check there are no cards with status /new/rev/lrn
+                        if ((d.revCount + d.newCount + d.lrnCount) == 0) {
+
+                            //still need to check d.children ... don't have due cards
+
+                            //check deck is not empty (ie: deck would never be visible) as it
+                            //contains no cards and meets the new/rev/lrn constraint
+                            boolean isDeckEmpty = (getCol().cardCount(new Long[]{d.did}) == 0);
+
+                            if (!isDeckEmpty) {
+                                //remove deck from List, it has no reviews
+                                iter.remove();
+
+                                //in next commit will add visual feedback with the option to
+                                //show hidden decks again, for now they get a Toast
+                                UIUtils.showThemedToast(getApplication(), "Decks with zero reviews are hidden.", true);
+                            }
+                        }
+                    }
+                }
+
                 mDeckListAdapter.buildDeckList(nodes, getCol());
 
                 // Set the "x due in y minutes" subtitle
